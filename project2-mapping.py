@@ -7,8 +7,10 @@ import math
 
 ######## PARAMETERS ###########
 fSpeed = 117 / 10  # Forward Speed in cm/s   (15cm/s)
-aSpeed = 360 / 10  # Angular Speed Degrees/s  (50d/s)
-interval = 0.25
+#aSpeed = 360 / 10  # Angular Speed Degrees/s  (50d/s)
+aSpeed = 50
+interval = 0.1
+#interval = 0.25
 dInterval = fSpeed * interval
 aInterval = aSpeed * interval
 ###############################################
@@ -20,7 +22,7 @@ yaw = 0
 kp.init()
 me = tello.Tello()
 me.connect()
-print(me.get_battery())
+print("BATTERY", me.get_battery())
 
 points = [(0, 0), (0, 0)]
 
@@ -42,10 +44,12 @@ def getKeyboardInput():
         a = 180
 
     if kp.getKey("UP"):
+        print("UP")
         fb = speed
         d = dInterval
         a = 270
     elif kp.getKey("DOWN"):
+        print("DOWN")
         fb = -speed
         d = -dInterval
         a = -90
@@ -62,9 +66,9 @@ def getKeyboardInput():
         yv = aspeed
         yaw += aInterval
 
-    if kp.getKey("q"): me.land(); sleep(3)
+    if kp.getKey("q"): print("land"); me.land(); sleep(3)
 
-    if kp.getKey("e"): me.takeoff()
+    if kp.getKey("e"): print("take off"); me.takeoff()
 
     sleep(interval)
 
@@ -73,7 +77,6 @@ def getKeyboardInput():
     y += int(d * math.sin(math.radians(a)))
 
     return [lr, fb, ud, yv, x, y]
-
 
 def drawPoints(img, points):
     for point in points:
@@ -84,8 +87,12 @@ def drawPoints(img, points):
                 (points[-1][0] + 10, points[-1][1] + 30), cv2.FONT_HERSHEY_PLAIN, 1,
                 (255, 0, 255), 1)
 
+initialYaw = me.get_yaw()
+
 while True:
     vals = getKeyboardInput()
+
+    print("YAW:", yaw, me.get_yaw() - initialYaw)
     me.send_rc_control(vals[0], vals[1], vals[2], vals[3])
     img = np.zeros((1000, 1000, 3), np.uint8)
     if points[-1][0] != vals[4] or points[-1][1] != vals[5]:
